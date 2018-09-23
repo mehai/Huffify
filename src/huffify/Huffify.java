@@ -22,14 +22,11 @@ import java.io.*;
  * about the Huffman Tree.
  * <p> <b>huffify.HuffNode</b> -  used to hold all the data about a certain
  * node in the Huffman Tree.
- * 
  * @author mehai
  * @version 1.0
  * @see huffify.FrequencyTable 
  * @see huffify.HuffmanTree 
  * @see huffify.HuffNode
- * 
- *
  */
 public class Huffify{
 	
@@ -69,6 +66,14 @@ public class Huffify{
 	//METHODS
 	//============================================
 	
+	/**
+	 * Creates a PriorityQueue based on a FrequencyTable previously
+	 * created. This PriorityQueue is used to further build the Huffman
+	 * Tree.
+	 * @param fq the FrequencyTable that contains the set used to 
+	 * create the PriorityQueue.
+	 * @return the PriorityQueue of nodes used to build the Huffman Tree.
+	 */
 	public static PriorityQueue<HuffNode> createPQ(FrequencyTable fq){
 		
 		PriorityQueue<HuffNode> pQueue = new PriorityQueue<HuffNode>(HUFF_COMP);
@@ -76,6 +81,13 @@ public class Huffify{
 		return pQueue;
 	}
 
+	/**
+	 * Test method to check if the created PriorityQueue is valid by printing
+	 * it. (not using iterator because PriorityQueue uses a heap so the iterator
+	 * won't help).
+	 * @param pq the PriorityQueue to be printed.
+	 * @return same PriorityQueue .
+	 */
 	public static PriorityQueue<HuffNode> printPQ(PriorityQueue<HuffNode> pq) {
 		
 		PriorityQueue<HuffNode> newPQ = new PriorityQueue<HuffNode>(HUFF_COMP);
@@ -87,6 +99,15 @@ public class Huffify{
 		return newPQ;
 	}
 	
+	/**
+	 * Gets the total number of bits needed for the entire encoded text.
+	 * It does this by using the formula:
+	 * <p> totalNrBits = char1.numberOfBitsInCode * char1.frequency + ... +
+	 * charn.numberOfBitsInCode * charn.frequency.
+	 * @param map the HashMap that contains the characters and their codes.
+	 * @param fq the FrequencyTable that contains the set of nodes (char - frequency).
+	 * @return an integer representing the number of bits needed for the entire text.
+	 */
 	public static int numOfBits(HashMap<Character, String> map, FrequencyTable fq) {
 		
 		int total = 0;
@@ -97,6 +118,16 @@ public class Huffify{
 		return total;
 	}
 	
+	/**
+	 * Creates a BitSet representing the encoded compressed text in bits.
+	 * This BitSet can be later used (with the Huffman Tree) to decompress
+	 * the text. It needs to be stored in a file named after the initial
+	 * filename + extension .huff.  
+	 * @param filename name of the text file to be compressed.
+	 * @param map the HashMap that contains the characters and their codes.
+	 * @param numBits total number of bits needed for the text.
+	 * @return a BitSet that contains the encoded compressed text.
+	 */
 	public static BitSet encode(String filename, HashMap<Character, String> map, int numBits){
 		
 		BitSet encoded = new BitSet(numBits);
@@ -141,6 +172,13 @@ public class Huffify{
 		return encoded;
 	}
 
+	/**
+	 * Creates the .huff file.
+	 * The [file].huff contains the BitSet that can be later used to
+	 * decompress and recreate the original text.
+	 * @param filename name of the .huff file.
+	 * @param code the BitSet to be serialized.
+	 */
 	public static void writeCompressedFile(String filename, BitSet code){
 		
 		try {
@@ -156,9 +194,26 @@ public class Huffify{
 	}
 	
 	/**
-	 * 
-	 * 
-	 * @param filename name of the file to be compressed
+	 * Does all the steps needed to achieve compression.
+	 * The steps are:
+	 * <p> 1. Creates a FrequencyTable of the text to be compressed.
+	 * <p> 2. Serializes a Set of nodes (character + frequency) into
+	 * a [file].ser, later needed to recreate the HuffmanTree.
+	 * <p> 3. Creates a PriorityQueue (minHeap) needed to create the
+	 * the HuffMan Tree.
+	 * <p> 4. Creates the HuffmanTree using the PriorityQueue and the
+	 * well known technique to do so.
+	 * <p> 5. With the help of the HuffmanTree method <code>buildCodes()</code>
+	 * , creates the codes for each character in the text.
+	 * <p> 6. It creates a BitSet that represents the compressed text
+	 * in bits.
+	 * <p> 7. Serializes the BitSet into the [file].huff also later 
+	 * needed for decompression.
+	 * @param filename name of the file to be compressed.
+	 * @see huffify.FrequencyTable
+	 * @see huffify.HuffmanTree
+	 * @see BitSet
+	 * @see PriorityQueue
 	 */
 	public static void compress(String filename){
 
@@ -175,13 +230,18 @@ public class Huffify{
 		HashMap<Character, String> codes = huffTree.buildCodes();
 		
 		int numBits = numOfBits(codes, fq);
-		System.out.println("number of bits: " + numBits);
 		//here the fun begins with the compression
 		BitSet encodedText = encode(filename, codes, numBits);
 		//code is being written
 		writeCompressedFile(filename + ".huff", encodedText);
 	}
-
+	
+	/**
+	 * Reads the BitSet from the [filename].huff. This file
+	 * was created during compression.
+	 * @param filename the name of the [filename].huff.
+	 * @return the deserialized BitSet.
+	 */
 	public static BitSet readBitSet(String filename) {
 		
 		BitSet code = null;
@@ -199,6 +259,19 @@ public class Huffify{
 		return code;
 	}
 	
+	/**
+	 * Recreates the initial file before compression. The name
+	 * of the recreated file is [old_filename].dec.
+	 * This method takes one bit at a time and moves in the
+	 * HuffmanTree in this way:
+	 * <p> 0 - move on the left child | 1 - move on the right child
+	 * <p> When you reach a leaf, that leaf contains the character to be
+	 * written. At this point we continue analyzing the bits one at a time
+	 * from the root of the HuffmanTree.
+	 * @param huff name of the [filename].huff file.
+	 * @param huffTree the HuffmanTree needed for decompression.
+	 * @param numBits total number of bits in the compressed encoded text.
+	 */
 	public static void writeDecompressedFile(String huff, HuffmanTree huffTree, int numBits) {
 		
 		FileOutputStream file;
@@ -234,6 +307,15 @@ public class Huffify{
 	    }
 	}
 	
+	/**
+	 * Does all the needed steps for decompression. The steps are:
+	 * <p> 1. Verifies if the [filename].ser and [filename].huff exist.
+	 * <p> 2. Deserializes the Set into a FrequencyTable.
+	 * <p> 3. Given the Set, does all the steps to build the HuffmanTree
+	 * and build the codes (more details in <code>compress</code> method).
+	 * <p> 4. Writes a file identical to the initial one named [filename].dec.
+	 * @param filename the <b>initial</b> name of the file.
+	 */
 	public static void decompress(String filename){
 
 		String serFile = filename + ".ser";
@@ -269,6 +351,14 @@ public class Huffify{
 	//============================================
 	//MAIN METHOD
 	//============================================
+	
+	/**
+	 * The main method takes the arguments in the command line
+	 * and verifies if the flags are valid, if the filename given
+	 * is valid and executes compression, decompression or prints
+	 * the HELP_MESSAGE considering the necessities of the user.
+	 * @param args used to identify flags and filename.
+	 */
 	public static void main (String []args)
 	{
 		try{
