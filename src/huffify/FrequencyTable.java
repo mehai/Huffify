@@ -4,6 +4,18 @@ import java.util.*;
 
 import java.io.*;
 
+/**
+ * <h2>FrequencyTable</h2>
+ * <p> This class is used to hold the primary information about the text.
+ * Mainly the characters and their frequency. It is supposed to create a
+ * set containing the characters present in the text and their frequency.
+ * This information is held in a HuffNode so the Set is actually a
+ * HashSet of HuffNodes.
+ * 
+ * @author mehai
+ * @see huffify.HuffNode
+ * 
+ */
 public class FrequencyTable {
 
 	//============================================
@@ -26,6 +38,12 @@ public class FrequencyTable {
 	//============================================
 	//CONSTRUCTORS
 	//============================================
+	
+	/**
+	 * Used only at compression to initialize the file and
+	 * the frequency array.
+	 * @param filename name of the file to be compressed
+	 */
 	FrequencyTable(String filename) {
 		this.file = new File(filename);
 		fq = new int[NUM_ASCII];
@@ -38,6 +56,12 @@ public class FrequencyTable {
 	//============================================
 	//METHDOS
 	//============================================
+	
+	/**
+	 * Initializes the instance variable set and adds the relevant info.
+	 * Relevant info = characters that appear in the text and their
+	 * frequencies. 
+	 */
 	private void createSet() {
 		set = new HashSet<HuffNode>();
 		for(int i = 0; i < NUM_ASCII; i++) {
@@ -47,6 +71,10 @@ public class FrequencyTable {
 		}
 	}
 	
+	/**
+	 * Calculates the frequency of each ASCII char in the text.
+	 * It reads one character at a time and increases its frequency.
+	 */
 	public void createTable() {
 		Scanner scan;
 		try {
@@ -66,6 +94,10 @@ public class FrequencyTable {
 		createSet();
 	}
 	
+	/**
+	 * Serializes the HashSet into a .ser file.
+	 * @param filename name of the [filename].ser file
+	 */
 	public void serializeSet(String filename) {
 		
 		try {
@@ -81,6 +113,10 @@ public class FrequencyTable {
 	      }
 	}
 	
+	/**
+	 * Deserializes the HashSet from the .ser file.
+	 * @param filename name of the [filename].ser file.
+	 */
 	@SuppressWarnings("unchecked")
 	public void deserializeSet(String filename) {
 		set = null;
@@ -98,13 +134,18 @@ public class FrequencyTable {
 	      }
 	}
 	
-	
+	/**
+	 * Prints all ASCII chars and their frequency in the text.
+	 */
 	public void printFrequencyTable() {
 		for(int i = 0; i < NUM_ASCII; i++) {
 			System.out.println((char) i + " " + fq[i] );
 		}
 	}
 	
+	/**
+	 * Prints all chars in the text and their frequency.
+	 */
 	public void printFrequencySet() {
 		Iterator<HuffNode> it = set.iterator();
 		while(it.hasNext()) {
@@ -113,10 +154,18 @@ public class FrequencyTable {
 		}
 	}
 	
+	/**
+	 * 
+	 * @return number of characters FrequencyTable keeps track of.
+	 */
 	public int length() {
 		return NUM_ASCII;
 	}
 	
+	/**
+	 * @param i index.
+	 * @return frequency of char at index i.
+	 */
 	public int index(int i) {
 		return fq[i];
 	}
