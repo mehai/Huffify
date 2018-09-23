@@ -12,7 +12,7 @@ package huffify;
  * @author mehai
  * @see huffify.HuffmanTree
  * @see huffify.FrequencyTable
- * @see PriorityQueue
+ * @see java.util.PriorityQueue
  */
 public class HuffNode implements java.io.Serializable{
 	//============================================
